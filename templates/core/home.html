@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+<section class="hero-card mb-4">
+    <div class="row g-4 align-items-center">
+        <div class="col-lg-8">
+            <h1 class="mb-3">Everyday File Tools, One Fast Workspace</h1>
+            <p class="mb-4 text-white-50">Merge, split, compress, convert and compare across PDF, image, and document formats.</p>
+            <div class="d-flex gap-2 flex-wrap">
+                <a href="{% url 'pdf_tools:index' %}" class="btn btn-brand">Open PDF Tools</a>
+                <a href="{% url 'image_tools:index' %}" class="btn btn-outline-light">Image Suite</a>
+                <a href="{% url 'document_tools:index' %}" class="btn btn-outline-light">Document AI</a>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="tool-shell">
+                <h5 class="mb-2">Platform Highlights</h5>
+                <div class="small text-secondary">25+ tool slots</div>
+                <div class="small text-secondary">Drag-drop uploads</div>
+            </div>
+        </div>
+    </div>
+</section>
+<section class="tool-shell">
+    <h3 class="mb-3">Explore Modules</h3>
+    <div class="tool-grid">
+        <a class="tool-card" href="{% url 'pdf_tools:index' %}">
+            <div class="icon"><i class="bi bi-file-earmark-pdf"></i></div>
+            <h5>PDF Tools</h5>
+            <p class="mb-0 text-secondary">Merge, split, rotate, compress, and more.</p>
+        </a>
+        <a class="tool-card" href="{% url 'image_tools:index' %}">
+            <div class="icon"><i class="bi bi-image"></i></div>
+            <h5>Image Tools</h5>
+            <p class="mb-0 text-secondary">Compress, resize, convert formats and batch workflows.</p>
+        </a>
+        <a class="tool-card" href="{% url 'document_tools:index' %}">
+            <div class="icon"><i class="bi bi-file-earmark-text"></i></div>
+            <h5>Document Tools</h5>
+            <p class="mb-0 text-secondary">Summarization, compare tools, OCR-ready paths.</p>
+        </a>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="tool-shell col-lg-7">
+    <h2>Remove Background</h2>
+    <p class="text-secondary">Requires <code>rembg</code> dependency.</p>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="mb-3">
+            <input class="form-control" type="file" name="file" accept="image/*" required>
+        </div>
+        <button class="btn btn-brand">Remove Background</button>
+    </form>
+</div>
+{% endblock %}
+

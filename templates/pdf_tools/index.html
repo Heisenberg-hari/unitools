@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="mb-0">PDF Tools</h2>
+    <span class="badge text-bg-light border">{{ tools|length }} tools</span>
+</div>
+<div class="tool-grid">
+    {% for tool in tools %}
+    <a href="{% url tool.url %}" class="tool-card {% if not tool.live %}coming-soon{% endif %}">
+        <div class="icon"><i class="bi {{ tool.icon }}"></i></div>
+        <h5>{{ tool.name }}</h5>
+        <p class="mb-2 text-secondary">{{ tool.desc }}</p>
+        {% if tool.live %}
+        <span class="badge text-bg-success">Available</span>
+        {% else %}
+        <span class="badge text-bg-secondary">Coming soon</span>
+        {% endif %}
+    </a>
+    {% endfor %}
+</div>
+{% endblock %}

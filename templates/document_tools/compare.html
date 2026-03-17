@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="tool-shell">
+    <h2>Compare Documents</h2>
+    <p class="text-secondary">Upload two documents (PDF, DOCX, TXT, DOC) or paste text versions.</p>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="row g-3 mb-3">
+            <div class="col-md-6">
+                <label class="form-label">Document A</label>
+                <input class="form-control" type="file" name="left_file" accept=".pdf,.doc,.docx,.txt,.md,.csv">
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Document B</label>
+                <input class="form-control" type="file" name="right_file" accept=".pdf,.doc,.docx,.txt,.md,.csv">
+            </div>
+        </div>
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label class="form-label">Text A</label>
+                <textarea class="form-control" name="left_text" rows="10"></textarea>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Text B</label>
+                <textarea class="form-control" name="right_text" rows="10"></textarea>
+            </div>
+        </div>
+        <button class="btn btn-brand mt-3">Compare</button>
+    </form>
+    {% if diff_output %}
+    <hr>
+    <h5>Diff Result</h5>
+    {% if source_names %}<div class="small text-secondary mb-2">Source: {{ source_names }}</div>{% endif %}
+    {% if explanation %}
+    <div class="mb-3">
+        <h6>LLM Comparison Summary</h6>
+        <textarea class="form-control" rows="8" readonly>{{ explanation }}</textarea>
+    </div>
+    {% endif %}
+    <pre class="p-3 rounded border bg-light small mb-0">{{ diff_output }}</pre>
+    {% endif %}
+</div>
+{% endblock %}

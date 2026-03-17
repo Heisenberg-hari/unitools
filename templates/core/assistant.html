@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="tool-shell">
+    <h2>UniTools Assistant</h2>
+    {% if not llm_enabled %}
+    <div class="alert alert-warning">Set <code>LLAMA_API_KEY</code> (and optional <code>LLAMA_BASE_URL</code>, <code>LLAMA_MODEL</code>) to enable chatbot replies.</div>
+    {% endif %}
+    <div id="chat-window" class="border rounded p-3 mb-3" style="min-height:260px; max-height:420px; overflow:auto; background:#fff;"></div>
+    <div class="input-group">
+        <input id="chat-input" class="form-control" placeholder="Ask about tools, workflows, or troubleshooting...">
+        <button id="chat-send" class="btn btn-brand" type="button">Send</button>
+    </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+function csrfToken() {
+  const m = document.cookie.match(/csrftoken=([^;]+)/);
+  return m ? m[1] : "";
+}
+function addMessage(role, text) {
+  const box = document.getElementById("chat-window");
+  const item = document.createElement("div");
+  item.className = role === "user" ? "text-end mb-2" : "text-start mb-2";
+  const bubble = document.createElement("div");
+  bubble.className = role === "user" ? "d-inline-block bg-primary text-white p-2 rounded" : "d-inline-block bg-light p-2 rounded";
+  bubble.textContent = text;
+  item.appendChild(bubble);
+  box.appendChild(item);
+  box.scrollTop = box.scrollHeight;
+}
+async function sendMessage() {
+  const input = document.getElementById("chat-input");
+  const message = input.value.trim();
+  if (!message) return;
+  input.value = "";
+  addMessage("user", message);
+  try {
+    const resp = await fetch("{% url 'core:assistant_api' %}", {
+      method: "POST",
+      headers: {"Content-Type":"application/json","X-CSRFToken":csrfToken()},
+      body: JSON.stringify({message})
+    });
+    const data = await resp.json();
+    addMessage("assistant", data.reply || data.error || "No response");
+  } catch (e) {
+    addMessage("assistant", "Assistant request failed.");
+  }
+}
+document.getElementById("chat-send").addEventListener("click", sendMessage);
+document.getElementById("chat-input").addEventListener("keydown", (e)=>{ if (e.key === "Enter") sendMessage(); });
+</script>
+{% endblock %}

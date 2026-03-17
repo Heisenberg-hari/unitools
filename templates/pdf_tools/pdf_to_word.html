@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="tool-shell col-lg-7">
+    <h2>PDF to Word</h2>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="mb-3">
+            <input class="form-control" type="file" name="file" accept=".pdf" required>
+        </div>
+        <button class="btn btn-brand">Convert to DOCX</button>
+    </form>
+</div>
+{% endblock %}
+

@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="tool-shell col-lg-7">
+    <h2>Compress Image</h2>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label class="form-label">Image file</label>
+            <input class="form-control" type="file" name="file" accept="image/*" required>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Quality (1-95)</label>
+            <input class="form-control" type="number" name="quality" min="1" max="95" value="70">
+        </div>
+        <div class="row g-2 mb-3">
+            <div class="col">
+                <label class="form-label">Target size</label>
+                <input class="form-control" type="number" step="0.1" min="0.1" name="target_size_value" placeholder="Optional">
+            </div>
+            <div class="col">
+                <label class="form-label">Unit</label>
+                <select class="form-select" name="target_size_unit">
+                    <option value="kb">KB</option>
+                    <option value="mb">MB</option>
+                </select>
+            </div>
+        </div>
+        <button class="btn btn-brand">Compress</button>
+    </form>
+</div>
+{% endblock %}

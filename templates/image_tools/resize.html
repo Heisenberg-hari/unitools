@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="tool-shell col-lg-7">
+    <h2>Resize Image</h2>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label class="form-label">Image file</label>
+            <input class="form-control" type="file" name="file" accept="image/*" required>
+        </div>
+        <div class="row g-2">
+            <div class="col">
+                <label class="form-label">Width</label>
+                <input class="form-control" type="number" min="1" name="width" value="1200">
+            </div>
+            <div class="col">
+                <label class="form-label">Height</label>
+                <input class="form-control" type="number" min="1" name="height" value="800">
+            </div>
+        </div>
+        <button class="btn btn-brand mt-3">Resize</button>
+    </form>
+</div>
+{% endblock %}
+

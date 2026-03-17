@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="tool-shell">
+    <h2>Text Analyzer</h2>
+    <p class="text-secondary">Analyze document or pasted text for quick readability and word insights.</p>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label class="form-label">Paste text (optional)</label>
+            <textarea class="form-control" name="text" rows="7" placeholder="Paste text here...">{{ text_input }}</textarea>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Or upload a file (.txt, .md, .csv, .log, .pdf, .docx)</label>
+            <input class="form-control" type="file" name="file" accept=".txt,.md,.csv,.log,.pdf,.docx">
+        </div>
+        <button class="btn btn-brand">Analyze</button>
+    </form>
+
+    {% if analysis %}
+    <hr>
+    {% if source_name %}
+    <p class="small text-secondary mb-3">Analyzed from file: <strong>{{ source_name }}</strong></p>
+    {% endif %}
+    <div class="row g-3">
+        <div class="col-md-6"><div class="p-3 border rounded bg-light">Words: <strong>{{ analysis.words }}</strong></div></div>
+        <div class="col-md-6"><div class="p-3 border rounded bg-light">Sentences: <strong>{{ analysis.sentences }}</strong></div></div>
+        <div class="col-md-6"><div class="p-3 border rounded bg-light">Paragraphs: <strong>{{ analysis.paragraphs }}</strong></div></div>
+        <div class="col-md-6"><div class="p-3 border rounded bg-light">Reading Time (min): <strong>{{ analysis.reading_time_minutes }}</strong></div></div>
+        <div class="col-md-6"><div class="p-3 border rounded bg-light">Characters: <strong>{{ analysis.characters }}</strong></div></div>
+        <div class="col-md-6"><div class="p-3 border rounded bg-light">Characters (No Spaces): <strong>{{ analysis.characters_no_spaces }}</strong></div></div>
+    </div>
+    <div class="mt-3 p-3 border rounded bg-light">
+        <div>Average Word Length: <strong>{{ analysis.avg_word_length }}</strong></div>
+        <div class="mt-2">Top Words:</div>
+        {% if analysis.top_words %}
+        <ul class="mb-0">
+            {% for word, count in analysis.top_words %}
+            <li><code>{{ word }}</code> ({{ count }})</li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p class="mb-0 text-secondary">No frequent words detected.</p>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

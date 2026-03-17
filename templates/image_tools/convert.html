@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="tool-shell col-lg-7">
+    <h2>Convert Image Format</h2>
+    <p class="text-secondary">For PDF output, you can upload multiple images.</p>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label class="form-label">Image file(s)</label>
+            <input class="form-control" type="file" name="files" accept="image/*" multiple required>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Target format</label>
+            <select class="form-select" name="target_format">
+                <option value="png">PNG</option>
+                <option value="jpg">JPG</option>
+                <option value="webp">WEBP</option>
+                <option value="bmp">BMP</option>
+                <option value="tiff">TIFF</option>
+                <option value="gif">GIF</option>
+                <option value="ico">ICO</option>
+                <option value="pdf">PDF (Image(s) to PDF)</option>
+            </select>
+        </div>
+        <button class="btn btn-brand">Convert</button>
+    </form>
+</div>
+{% endblock %}

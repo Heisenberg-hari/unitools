@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="tool-shell col-lg-7">
+    <h2>Split PDF</h2>
+    <p class="text-secondary">Extract a page range into a new file.</p>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label class="form-label">PDF File</label>
+            <input class="form-control" type="file" name="file" accept=".pdf" required>
+        </div>
+        <div class="row g-2">
+            <div class="col">
+                <label class="form-label">Start page</label>
+                <input class="form-control" type="number" min="1" name="start_page" value="1">
+            </div>
+            <div class="col">
+                <label class="form-label">End page</label>
+                <input class="form-control" type="number" min="1" name="end_page" value="1">
+            </div>
+        </div>
+        <button class="btn btn-brand mt-3">Split</button>
+    </form>
+</div>
+{% endblock %}
+

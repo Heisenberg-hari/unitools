@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="tool-shell col-lg-7">
+    <h2>Merge PDF</h2>
+    <p class="text-secondary">Upload two or more PDF files to combine.</p>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="drop-zone">
+            <input type="file" name="files" accept=".pdf" multiple hidden required>
+            <p class="mb-0">Drag and drop PDFs or click to select</p>
+        </div>
+        <button class="btn btn-brand mt-3">Merge</button>
+    </form>
+</div>
+{% endblock %}

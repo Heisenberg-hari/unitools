@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="tool-shell">
+    <h2>Translate Text</h2>
+    <p class="text-secondary">Upload a document or paste text, then choose target language.</p>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label class="form-label">Document file</label>
+            <input class="form-control" type="file" name="file" accept=".pdf,.doc,.docx,.txt,.md,.csv">
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Text input</label>
+            <textarea class="form-control" name="text" rows="7"></textarea>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Target language</label>
+            <select class="form-select" name="target_lang">
+                {% for code, label in languages %}
+                <option value="{{ code }}" {% if code == selected_lang %}selected{% endif %}>{{ label }} ({{ code }})</option>
+                {% endfor %}
+            </select>
+        </div>
+        <button class="btn btn-brand">Translate</button>
+    </form>
+    {% if output %}
+    <hr>
+    <h5>Translated Text</h5>
+    <textarea class="form-control" rows="14" readonly>{{ output }}</textarea>
+    {% endif %}
+</div>
+{% endblock %}

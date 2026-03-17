@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="tool-shell">
+    <h2>Summarize Text</h2>
+    <p class="text-secondary">Upload a document (PDF, DOCX, TXT, DOC) or paste text.</p>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label class="form-label">Document file</label>
+            <input class="form-control" type="file" name="file" accept=".pdf,.doc,.docx,.txt,.md,.csv">
+        </div>
+        <div class="mb-3">
+            <textarea class="form-control" name="text" rows="8" placeholder="Paste text here..."></textarea>
+        </div>
+        <button class="btn btn-brand">Summarize</button>
+    </form>
+    {% if output %}
+    <hr>
+    <h5>Summary</h5>
+    {% if source_name %}<div class="small text-secondary mb-2">Source: {{ source_name }}</div>{% endif %}
+    <textarea class="form-control" rows="14" readonly>{{ output }}</textarea>
+    {% endif %}
+</div>
+{% endblock %}
