@@ -1,6 +1,7 @@
 import io
 import logging
 import zipfile
+from pathlib import Path
 from django.core.files.base import ContentFile
 
 logger = logging.getLogger("unitools")
@@ -99,11 +100,13 @@ def resize_image(file_obj, width=1200, height=800):
 
 def watermark_image(file_obj, watermark_text="UniTools"):
     try:
+        import PIL
         from PIL import Image, ImageDraw, ImageFont
 
         image = Image.open(file_obj).convert("RGBA")
         overlay = Image.new("RGBA", image.size, (255, 255, 255, 0))
-        font_names = ("arial.ttf", "DejaVuSans.ttf", "LiberationSans-Regular.ttf")
+        pil_font_path = Path(PIL.__file__).resolve().parent / "fonts" / "DejaVuSans.ttf"
+        font_names = ("arial.ttf", "DejaVuSans.ttf", "LiberationSans-Regular.ttf", str(pil_font_path))
         max_w = int(image.width * 0.9)
         max_h = int(image.height * 0.9)
         resample = getattr(Image, "Resampling", Image).BICUBIC
