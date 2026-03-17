@@ -105,23 +105,39 @@ def watermark_image(file_obj, watermark_text="UniTools"):
         overlay = Image.new("RGBA", image.size, (255, 255, 255, 0))
         draw = ImageDraw.Draw(overlay)
 
-        # Match PDF watermark behavior: large, centered, and diagonal.
-        base_size = max(28, int(min(image.width, image.height) * 0.12))
-        font = None
-        for font_name in ("arial.ttf", "DejaVuSans.ttf", "LiberationSans-Regular.ttf"):
-            try:
-                font = ImageFont.truetype(font_name, base_size)
-                break
-            except OSError:
-                continue
-        if font is None:
-            font = ImageFont.load_default()
-
+        # Match PDF watermark behavior: centered + diagonal, but keep text inside image bounds.
+        candidate_size = max(24, int(min(image.width, image.height) * 0.14))
+        font_names = ("arial.ttf", "DejaVuSans.ttf", "LiberationSans-Regular.ttf")
         text_layer = Image.new("RGBA", image.size, (255, 255, 255, 0))
         text_draw = ImageDraw.Draw(text_layer)
-        bbox = text_draw.textbbox((0, 0), watermark_text, font=font)
-        text_w = bbox[2] - bbox[0]
-        text_h = bbox[3] - bbox[1]
+
+        font = None
+        text_w = 0
+        text_h = 0
+        for size in range(candidate_size, 15, -2):
+            for font_name in font_names:
+                try:
+                    trial_font = ImageFont.truetype(font_name, size)
+                    break
+                except OSError:
+                    trial_font = None
+            if trial_font is None:
+                continue
+            bbox = text_draw.textbbox((0, 0), watermark_text, font=trial_font)
+            trial_w = bbox[2] - bbox[0]
+            trial_h = bbox[3] - bbox[1]
+            if trial_w <= int(image.width * 0.72) and trial_h <= int(image.height * 0.22):
+                font = trial_font
+                text_w = trial_w
+                text_h = trial_h
+                break
+
+        if font is None:
+            font = ImageFont.load_default()
+            bbox = text_draw.textbbox((0, 0), watermark_text, font=font)
+            text_w = bbox[2] - bbox[0]
+            text_h = bbox[3] - bbox[1]
+
         pos = ((image.width - text_w) // 2, (image.height - text_h) // 2)
         text_draw.text(pos, watermark_text, fill=(255, 255, 255, 90), font=font)
 
