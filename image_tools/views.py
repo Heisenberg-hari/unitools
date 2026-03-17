@@ -29,13 +29,24 @@ def index(request):
 def compress(request):
     if request.method == "POST":
         file_obj = request.FILES.get("file")
-        quality = int(request.POST.get("quality", 70))
+        if not file_obj:
+            messages.error(request, "Upload an image file.")
+            return redirect("image_tools:compress")
+        try:
+            quality = int(request.POST.get("quality", 70))
+        except (TypeError, ValueError):
+            messages.error(request, "Enter a valid quality value.")
+            return redirect("image_tools:compress")
         target_value = request.POST.get("target_size_value", "").strip()
         target_unit = request.POST.get("target_size_unit", "kb")
         target_bytes = None
         if target_value:
-            factor = 1024 if target_unit == "kb" else 1024 * 1024
-            target_bytes = int(float(target_value) * factor)
+            try:
+                factor = 1024 if target_unit == "kb" else 1024 * 1024
+                target_bytes = int(float(target_value) * factor)
+            except (TypeError, ValueError):
+                messages.error(request, "Enter a valid target size.")
+                return redirect("image_tools:compress")
         result = compress_image(file_obj, quality=quality, target_bytes=target_bytes)
         record_operation(request.user, "compress_image", [file_obj])
         return FileResponse(result, as_attachment=True, filename=result.name)
@@ -65,8 +76,15 @@ def convert(request):
 def resize(request):
     if request.method == "POST":
         file_obj = request.FILES.get("file")
-        width = int(request.POST.get("width", 1200))
-        height = int(request.POST.get("height", 800))
+        if not file_obj:
+            messages.error(request, "Upload an image file.")
+            return redirect("image_tools:resize")
+        try:
+            width = int(request.POST.get("width", 1200))
+            height = int(request.POST.get("height", 800))
+        except (TypeError, ValueError):
+            messages.error(request, "Enter valid width and height.")
+            return redirect("image_tools:resize")
         result = resize_image(file_obj, width=width, height=height)
         record_operation(request.user, "resize_image", [file_obj])
         return FileResponse(result, as_attachment=True, filename=result.name)
@@ -77,6 +95,9 @@ def resize(request):
 def watermark(request):
     if request.method == "POST":
         file_obj = request.FILES.get("file")
+        if not file_obj:
+            messages.error(request, "Upload an image file.")
+            return redirect("image_tools:watermark")
         text = request.POST.get("text", "UniTools")
         result = watermark_image(file_obj, watermark_text=text)
         record_operation(request.user, "watermark_image", [file_obj])
@@ -88,6 +109,9 @@ def watermark(request):
 def remove_bg(request):
     if request.method == "POST":
         file_obj = request.FILES.get("file")
+        if not file_obj:
+            messages.error(request, "Upload an image file.")
+            return redirect("image_tools:remove_bg")
         try:
             result = remove_background(file_obj)
         except RuntimeError as exc:
@@ -102,6 +126,9 @@ def remove_bg(request):
 def batch_rename(request):
     if request.method == "POST":
         files = request.FILES.getlist("files")
+        if not files:
+            messages.error(request, "Upload at least one image.")
+            return redirect("image_tools:batch_rename")
         prefix = request.POST.get("prefix", "image")
         bundle = batch_rename(files, prefix=prefix)
         record_operation(request.user, "batch_rename", files)

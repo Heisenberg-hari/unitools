@@ -39,12 +39,19 @@ def merge_pdf(request):
 def compress_pdf(request):
     if request.method == "POST":
         file_obj = request.FILES.get("file")
+        if not file_obj:
+            messages.error(request, "Upload a PDF file.")
+            return redirect("pdf_tools:compress")
         target_value = request.POST.get("target_size_value", "").strip()
         target_unit = request.POST.get("target_size_unit", "kb")
         target_bytes = None
         if target_value:
-            factor = 1024 if target_unit == "kb" else 1024 * 1024
-            target_bytes = int(float(target_value) * factor)
+            try:
+                factor = 1024 if target_unit == "kb" else 1024 * 1024
+                target_bytes = int(float(target_value) * factor)
+            except (TypeError, ValueError):
+                messages.error(request, "Enter a valid target size.")
+                return redirect("pdf_tools:compress")
         try:
             result = services.compress_pdf(file_obj, target_bytes=target_bytes)
         except RuntimeError as exc:
@@ -59,8 +66,15 @@ def compress_pdf(request):
 def split_pdf(request):
     if request.method == "POST":
         file_obj = request.FILES.get("file")
-        start_page = int(request.POST.get("start_page", 1))
-        end_page = int(request.POST.get("end_page", start_page))
+        if not file_obj:
+            messages.error(request, "Upload a PDF file.")
+            return redirect("pdf_tools:split")
+        try:
+            start_page = int(request.POST.get("start_page", 1))
+            end_page = int(request.POST.get("end_page", start_page))
+        except (TypeError, ValueError):
+            messages.error(request, "Enter valid page numbers.")
+            return redirect("pdf_tools:split")
         try:
             result = services.split_pdf(file_obj, start_page=start_page, end_page=end_page)
         except RuntimeError as exc:
@@ -75,7 +89,14 @@ def split_pdf(request):
 def rotate_pdf(request):
     if request.method == "POST":
         file_obj = request.FILES.get("file")
-        degrees = int(request.POST.get("degrees", 90))
+        if not file_obj:
+            messages.error(request, "Upload a PDF file.")
+            return redirect("pdf_tools:rotate")
+        try:
+            degrees = int(request.POST.get("degrees", 90))
+        except (TypeError, ValueError):
+            messages.error(request, "Enter a valid rotation value.")
+            return redirect("pdf_tools:rotate")
         try:
             result = services.rotate_pdf(file_obj, degrees=degrees)
         except RuntimeError as exc:
@@ -90,6 +111,9 @@ def rotate_pdf(request):
 def watermark_pdf(request):
     if request.method == "POST":
         file_obj = request.FILES.get("file")
+        if not file_obj:
+            messages.error(request, "Upload a PDF file.")
+            return redirect("pdf_tools:watermark")
         watermark_text = request.POST.get("watermark_text", "CONFIDENTIAL")
         try:
             result = services.add_watermark(file_obj, watermark_text=watermark_text)
@@ -105,6 +129,9 @@ def watermark_pdf(request):
 def pdf_to_word(request):
     if request.method == "POST":
         file_obj = request.FILES.get("file")
+        if not file_obj:
+            messages.error(request, "Upload a PDF file.")
+            return redirect("pdf_tools:pdf_to_word")
         try:
             result = services.pdf_to_word(file_obj)
         except RuntimeError as exc:
@@ -119,6 +146,9 @@ def pdf_to_word(request):
 def word_to_pdf(request):
     if request.method == "POST":
         file_obj = request.FILES.get("file")
+        if not file_obj:
+            messages.error(request, "Upload a DOCX file.")
+            return redirect("pdf_tools:word_to_pdf")
         try:
             result = services.word_to_pdf(file_obj)
         except RuntimeError as exc:
