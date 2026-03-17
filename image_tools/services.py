@@ -104,13 +104,29 @@ def watermark_image(file_obj, watermark_text="UniTools"):
         image = Image.open(file_obj).convert("RGBA")
         overlay = Image.new("RGBA", image.size, (255, 255, 255, 0))
         draw = ImageDraw.Draw(overlay)
-        try:
-            font = ImageFont.truetype("arial.ttf", 36)
-        except OSError:
+
+        # Match PDF watermark behavior: large, centered, and diagonal.
+        base_size = max(28, int(min(image.width, image.height) * 0.12))
+        font = None
+        for font_name in ("arial.ttf", "DejaVuSans.ttf", "LiberationSans-Regular.ttf"):
+            try:
+                font = ImageFont.truetype(font_name, base_size)
+                break
+            except OSError:
+                continue
+        if font is None:
             font = ImageFont.load_default()
-        x = max(20, image.width - 240)
-        y = max(20, image.height - 60)
-        draw.text((x, y), watermark_text, fill=(255, 255, 255, 160), font=font)
+
+        text_layer = Image.new("RGBA", image.size, (255, 255, 255, 0))
+        text_draw = ImageDraw.Draw(text_layer)
+        bbox = text_draw.textbbox((0, 0), watermark_text, font=font)
+        text_w = bbox[2] - bbox[0]
+        text_h = bbox[3] - bbox[1]
+        pos = ((image.width - text_w) // 2, (image.height - text_h) // 2)
+        text_draw.text(pos, watermark_text, fill=(255, 255, 255, 90), font=font)
+
+        rotated = text_layer.rotate(45, resample=Image.Resampling.BICUBIC, center=(image.width // 2, image.height // 2))
+        overlay = Image.alpha_composite(overlay, rotated)
         out = Image.alpha_composite(image, overlay).convert("RGB")
         buf = io.BytesIO()
         out.save(buf, format="PNG")
