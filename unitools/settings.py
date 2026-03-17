@@ -1,10 +1,12 @@
 from pathlib import Path
 import os
+import shutil
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv("SECRET_KEY", "dev-secret-key-change-me")
-DEBUG = os.getenv("DEBUG", "True").lower() == "true"
-ALLOWED_HOSTS = [h for h in os.getenv("ALLOWED_HOSTS", "127.0.0.1,localhost,testserver").split(",") if h]
+IS_VERCEL = os.getenv("VERCEL") == "1"
+DEBUG = os.getenv("DEBUG", "False" if IS_VERCEL else "True").lower() == "true"
+ALLOWED_HOSTS = [h for h in os.getenv("ALLOWED_HOSTS", "127.0.0.1,localhost,testserver,.vercel.app").split(",") if h]
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -56,6 +58,19 @@ DATABASES = {
     }
 }
 
+if IS_VERCEL:
+    writable_db = Path("/tmp/db.sqlite3")
+    source_db = BASE_DIR / "db.sqlite3"
+    if source_db.exists() and not writable_db.exists():
+        try:
+            shutil.copy2(source_db, writable_db)
+        except OSError:
+            pass
+    DATABASES["default"]["NAME"] = str(writable_db)
+    # Avoid write attempts to DB-backed sessions/messages in ephemeral serverless runtime.
+    SESSION_ENGINE = "django.contrib.sessions.backends.signed_cookies"
+    MESSAGE_STORAGE = "django.contrib.messages.storage.cookie.CookieStorage"
+
 AUTH_USER_MODEL = "accounts.User"
 LANGUAGE_CODE = "en-us"
 TIME_ZONE = "UTC"
@@ -82,16 +97,15 @@ LOGGING = {
         }
     },
     "handlers": {
-        "file": {
+        "console": {
             "level": "ERROR",
-            "class": "logging.FileHandler",
-            "filename": BASE_DIR / "errors.log",
+            "class": "logging.StreamHandler",
             "formatter": "verbose",
-        }
+        },
     },
     "loggers": {
         "unitools": {
-            "handlers": ["file"],
+            "handlers": ["console"],
             "level": "ERROR",
             "propagate": False,
         }
