@@ -103,46 +103,52 @@ def watermark_image(file_obj, watermark_text="UniTools"):
 
         image = Image.open(file_obj).convert("RGBA")
         overlay = Image.new("RGBA", image.size, (255, 255, 255, 0))
-        draw = ImageDraw.Draw(overlay)
-
-        # Match PDF watermark behavior: centered + diagonal, but keep text inside image bounds.
-        candidate_size = max(24, int(min(image.width, image.height) * 0.14))
         font_names = ("arial.ttf", "DejaVuSans.ttf", "LiberationSans-Regular.ttf")
-        text_layer = Image.new("RGBA", image.size, (255, 255, 255, 0))
-        text_draw = ImageDraw.Draw(text_layer)
+        max_w = int(image.width * 0.9)
+        max_h = int(image.height * 0.9)
+        resample = getattr(Image, "Resampling", Image).BICUBIC
+        rotated = None
 
-        font = None
-        text_w = 0
-        text_h = 0
-        for size in range(candidate_size, 15, -2):
+        # Size against the rotated watermark box so it always fits the image.
+        start_size = max(20, int(min(image.width, image.height) * 0.18))
+        for size in range(start_size, 11, -2):
+            font = None
             for font_name in font_names:
                 try:
-                    trial_font = ImageFont.truetype(font_name, size)
+                    font = ImageFont.truetype(font_name, size)
                     break
                 except OSError:
-                    trial_font = None
-            if trial_font is None:
+                    continue
+            if font is None:
                 continue
-            bbox = text_draw.textbbox((0, 0), watermark_text, font=trial_font)
-            trial_w = bbox[2] - bbox[0]
-            trial_h = bbox[3] - bbox[1]
-            if trial_w <= int(image.width * 0.72) and trial_h <= int(image.height * 0.22):
-                font = trial_font
-                text_w = trial_w
-                text_h = trial_h
+
+            measure = Image.new("RGBA", (1, 1), (255, 255, 255, 0))
+            measure_draw = ImageDraw.Draw(measure)
+            bbox = measure_draw.textbbox((0, 0), watermark_text, font=font)
+            text_w = max(1, bbox[2] - bbox[0])
+            text_h = max(1, bbox[3] - bbox[1])
+            pad = max(8, int(size * 0.25))
+
+            text_layer = Image.new("RGBA", (text_w + pad * 2, text_h + pad * 2), (255, 255, 255, 0))
+            text_draw = ImageDraw.Draw(text_layer)
+            text_draw.text((pad, pad), watermark_text, fill=(255, 255, 255, 90), font=font)
+            trial_rotated = text_layer.rotate(45, expand=True, resample=resample)
+
+            if trial_rotated.width <= max_w and trial_rotated.height <= max_h:
+                rotated = trial_rotated
                 break
 
-        if font is None:
+        if rotated is None:
+            # Safe fallback for extremely small images.
             font = ImageFont.load_default()
-            bbox = text_draw.textbbox((0, 0), watermark_text, font=font)
-            text_w = bbox[2] - bbox[0]
-            text_h = bbox[3] - bbox[1]
+            text_layer = Image.new("RGBA", (image.width, image.height), (255, 255, 255, 0))
+            text_draw = ImageDraw.Draw(text_layer)
+            text_draw.text((10, 10), watermark_text, fill=(255, 255, 255, 90), font=font)
+            rotated = text_layer.rotate(45, expand=False, resample=resample)
 
-        pos = ((image.width - text_w) // 2, (image.height - text_h) // 2)
-        text_draw.text(pos, watermark_text, fill=(255, 255, 255, 90), font=font)
-
-        rotated = text_layer.rotate(45, resample=Image.Resampling.BICUBIC, center=(image.width // 2, image.height // 2))
-        overlay = Image.alpha_composite(overlay, rotated)
+        x = (image.width - rotated.width) // 2
+        y = (image.height - rotated.height) // 2
+        overlay.alpha_composite(rotated, dest=(x, y))
         out = Image.alpha_composite(image, overlay).convert("RGB")
         buf = io.BytesIO()
         out.save(buf, format="PNG")
