@@ -1,4 +1,6 @@
 from django.contrib import admin
+from django.conf import settings
+from django.conf.urls.static import static
 from django.urls import include, path
 
 urlpatterns = [
@@ -10,3 +12,6 @@ urlpatterns = [
     path("document/", include("document_tools.urls")),
 ]
 
+if settings.IS_VERCEL:
+    # Fallback static serving for Vercel serverless deployments.
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.BASE_DIR / "static")
